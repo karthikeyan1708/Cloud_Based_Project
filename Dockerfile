@@ -1,41 +1,22 @@
-# base image
-# a little overkill but need it to install dot cli for dtreeviz
-FROM ubuntu:18.04
+# Use an official Python runtime as the base image
+FROM python:3.9.3
 
-# ubuntu installing - python, pip, graphviz, nano, libpq (for psycopg2)
-RUN apt-get update &&\
-    apt-get install python3.7 -y &&\
-    apt-get install python3-pip -y &&\
-    apt-get install graphviz -y
 
-# exposing default port for streamlit
-EXPOSE 8501
 
-# making directory of app
-WORKDIR /streamlit-docker
+# Set the working directory in the container
+WORKDIR /app
 
-# copy over requirements
-COPY requirements.txt ./requirements.txt
+# Copy the requirements file into the container
+COPY requirements.txt .
 
-# install pip then packages
-RUN pip3 install -r requirements.txt
+# Install the Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# copying all files over
+# Copy the application code into the container
 COPY . .
 
-# cmd to launch app when container is run
-CMD streamlit run app.py
+# Expose the port that the Streamlit application will run on
+EXPOSE 8501
 
-# streamlit-specific commands for config
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-RUN mkdir -p /root/.streamlit
-RUN bash -c 'echo -e "\
-[general]\n\
-email = \"\"\n\
-" > /root/.streamlit/credentials.toml'
-
-RUN bash -c 'echo -e "\
-[server]\n\
-enableCORS = false\n\
-" > /root/.streamlit/config.toml'
+# Run the Streamlit application
+CMD ["streamlit", "run", "--server.port", "8501", "app.py"]
